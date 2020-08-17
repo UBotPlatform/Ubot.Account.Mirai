@@ -19,5 +19,11 @@ dependencies {
 }
 
 application {
-    mainClassName = "ubot.account.mirai.AppKt"
+    mainClassName = "ubot.account.mirai.MiraiAccountKt"
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes("Main-Class" to "ubot.account.mirai.MiraiAccountKt")
+    }
 }
