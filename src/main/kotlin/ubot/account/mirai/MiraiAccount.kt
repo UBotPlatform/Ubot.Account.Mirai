@@ -41,7 +41,15 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun getUserName(id: String): String {
-        TODO("Not yet implemented")
+        // stupid but useful
+        val idLong = id.toLong()
+        for (group in bot!!.groups) {
+            val member = group.getOrNull(idLong)
+            if (member != null) {
+                return member.nick
+            }
+        }
+        return bot!!.getFriend(idLong).nick
     }
 
     override suspend fun login() {
