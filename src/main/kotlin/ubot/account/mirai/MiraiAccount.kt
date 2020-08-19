@@ -37,7 +37,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun getUserAvatar(id: String): String {
-        TODO("Not yet implemented")
+        return "http://q1.qlogo.cn/g?b=qq&nk=${id}&s=640"
     }
 
     override suspend fun getUserName(id: String): String {
