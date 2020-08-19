@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
 import ubot.common.*
+import java.io.File
 import java.net.URL
 import kotlin.system.exitProcess
 
@@ -53,7 +54,13 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun login() {
-        val b = Bot(username.toLong(), password)
+        var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
+        if (appFolder.isFile) {
+            appFolder = appFolder.parentFile
+        }
+        val b = Bot(username.toLong(), password) {
+            fileBasedDeviceInfo(File(appFolder, "mirai.${username}.device.json").absolutePath)
+        }
         bot = b
         b.subscribeAlways<MemberJoinEvent> {
             event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
