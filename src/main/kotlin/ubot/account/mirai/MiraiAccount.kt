@@ -4,8 +4,7 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.closeAndJoin
 import net.mamoe.mirai.contact.nameCardOrNick
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.FriendMessageEvent
@@ -81,6 +80,33 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     this.sender.id.toString(),
                     toUBotMessage(this.message),
                     ChatMessageInfo())
+        }
+        b.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+            val r = event.processGroupInvitation(this.invitorId.toString(),
+                    this.groupId.toString(),
+                    "")
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.ignore()
+            }
+        }
+        b.subscribeAlways<MemberJoinRequestEvent> {
+            val r = event.processMembershipRequest(this.groupId.toString(),
+                    this.fromId.toString(),
+                    "",
+                    this.message)
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.reject(message = if (r is UBotEventResultWithReason) r.reason ?: "" else "")
+            }
+        }
+        b.subscribeAlways<NewFriendRequestEvent> {
+            val r = event.processFriendRequest(this.fromId.toString(),
+                    "")
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.reject()
+            }
         }
         b.login()
     }
