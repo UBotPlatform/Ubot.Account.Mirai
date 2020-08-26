@@ -163,6 +163,22 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         }
     }
 
+    override suspend fun getGroupList(): Array<String> {
+        return bot!!.groups.map {
+            it.id.toString()
+        }.toTypedArray()
+    }
+
+    override suspend fun getMemberList(id: String): Array<String> {
+        return bot!!.getGroup(id.toLong()).members.map {
+            it.id.toString()
+        }.toTypedArray()
+    }
+
+    override suspend fun getPlatformID(): String {
+        return "QQ"
+    }
+
     private suspend fun toUBotMessage(msg: Message): String {
         val builder = ChatMessageBuilder()
         for (it in msg.flatten()) {
