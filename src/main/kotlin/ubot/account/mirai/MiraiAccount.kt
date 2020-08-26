@@ -11,6 +11,8 @@ import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
+import net.mamoe.mirai.qqandroid.QQAndroid
+import net.mamoe.mirai.utils.BotConfiguration
 import ubot.common.*
 import java.io.File
 import java.net.URL
@@ -57,9 +59,9 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         if (appFolder.isFile) {
             appFolder = appFolder.parentFile
         }
-        val b = Bot(username.toLong(), password) {
+        val b = QQAndroid.Bot(username.toLong(), password, BotConfiguration().apply {
             fileBasedDeviceInfo(File(appFolder, "mirai.${username}.device.json").absolutePath)
-        }
+        })
         bot = b
         b.subscribeAlways<MemberJoinEvent> {
             event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
