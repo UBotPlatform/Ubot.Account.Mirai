@@ -19,23 +19,71 @@ import java.net.URL
 import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
-                   private val username: String,
-                   private val password: String)
+                   private val bot: Bot)
     : BaseUBotAccount() {
-    private var bot: Bot? = null
+    init {
+        bot.subscribeAlways<MemberJoinEvent> {
+            event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
+        }
+        bot.subscribeAlways<MemberLeaveEvent> {
+            event.onMemberLeft(this.group.id.toString(), this.member.id.toString())
+        }
+        bot.subscribeAlways<FriendMessageEvent> {
+            event.onReceiveChatMessage(ChatMessageType.Private,
+                    "",
+                    this.sender.id.toString(),
+                    toUBotMessage(this.message),
+                    ChatMessageInfo())
+        }
+        bot.subscribeAlways<GroupMessageEvent> {
+            event.onReceiveChatMessage(ChatMessageType.Group,
+                    this.group.id.toString(),
+                    this.sender.id.toString(),
+                    toUBotMessage(this.message),
+                    ChatMessageInfo())
+        }
+        bot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+            val r = event.processGroupInvitation(this.invitorId.toString(),
+                    this.groupId.toString(),
+                    "")
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.ignore()
+            }
+        }
+        bot.subscribeAlways<MemberJoinRequestEvent> {
+            val r = event.processMembershipRequest(this.groupId.toString(),
+                    this.fromId.toString(),
+                    "",
+                    this.message)
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.reject(message = r.reason ?: "")
+            }
+        }
+        bot.subscribeAlways<NewFriendRequestEvent> {
+            val r = event.processFriendRequest(this.fromId.toString(),
+                    "")
+            when (r.type) {
+                10 -> this.accept()
+                20 -> this.reject()
+            }
+        }
+    }
+
     override suspend fun getGroupName(id: String): String {
-        return bot!!.getGroup(id.toLong()).name
+        return bot.getGroup(id.toLong()).name
     }
 
     override suspend fun getMemberName(source: String, target: String): String {
         if (source.isEmpty()) {
-            return bot!!.getFriend(target.toLong()).nick
+            return bot.getFriend(target.toLong()).nick
         }
-        return bot!!.getGroup(source.toLong())[target.toLong()].nameCardOrNick
+        return bot.getGroup(source.toLong())[target.toLong()].nameCardOrNick
     }
 
     override suspend fun getSelfID(): String {
-        return bot!!.selfQQ.id.toString()
+        return bot.selfQQ.id.toString()
     }
 
     override suspend fun getUserAvatar(id: String): String {
@@ -45,90 +93,25 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     override suspend fun getUserName(id: String): String {
         // stupid but useful
         val idLong = id.toLong()
-        for (group in bot!!.groups) {
+        for (group in bot.groups) {
             val member = group.getOrNull(idLong)
             if (member != null) {
                 return member.nick
             }
         }
-        return bot!!.getFriend(idLong).nick
-    }
-
-    override suspend fun login() {
-        var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
-        if (appFolder.isFile) {
-            appFolder = appFolder.parentFile
-        }
-        val b = QQAndroid.Bot(username.toLong(), password, BotConfiguration().apply {
-            fileBasedDeviceInfo(File(appFolder, "mirai.${username}.device.json").absolutePath)
-        })
-        bot = b
-        b.subscribeAlways<MemberJoinEvent> {
-            event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
-        }
-        b.subscribeAlways<MemberLeaveEvent> {
-            event.onMemberLeft(this.group.id.toString(), this.member.id.toString())
-        }
-        b.subscribeAlways<FriendMessageEvent> {
-            event.onReceiveChatMessage(ChatMessageType.Private,
-                    "",
-                    this.sender.id.toString(),
-                    toUBotMessage(this.message),
-                    ChatMessageInfo())
-        }
-        b.subscribeAlways<GroupMessageEvent> {
-            event.onReceiveChatMessage(ChatMessageType.Group,
-                    this.group.id.toString(),
-                    this.sender.id.toString(),
-                    toUBotMessage(this.message),
-                    ChatMessageInfo())
-        }
-        b.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
-            val r = event.processGroupInvitation(this.invitorId.toString(),
-                    this.groupId.toString(),
-                    "")
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.ignore()
-            }
-        }
-        b.subscribeAlways<MemberJoinRequestEvent> {
-            val r = event.processMembershipRequest(this.groupId.toString(),
-                    this.fromId.toString(),
-                    "",
-                    this.message)
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.reject(message = if (r is UBotEventResultWithReason) r.reason ?: "" else "")
-            }
-        }
-        b.subscribeAlways<NewFriendRequestEvent> {
-            val r = event.processFriendRequest(this.fromId.toString(),
-                    "")
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.reject()
-            }
-        }
-        b.login()
-    }
-
-    override suspend fun logout() {
-        val b = bot
-        bot = null
-        b?.closeAndJoin()
+        return bot.getFriend(idLong).nick
     }
 
     override suspend fun removeMember(source: String, target: String) {
-        return bot!!.getGroup(source.toLong())[target.toLong()].kick()
+        return bot.getGroup(source.toLong())[target.toLong()].kick()
     }
 
     override suspend fun sendChatMessage(type: Int, source: String, target: String, message: String) {
         val contact = when (type) {
             ChatMessageType.Group ->
-                bot!!.getGroup(source.toLong())
+                bot.getGroup(source.toLong())
             ChatMessageType.Private ->
-                bot!!.getFriend(target.toLong())
+                bot.getFriend(target.toLong())
             else ->
                 throw IllegalArgumentException("invalid type")
         }
@@ -141,7 +124,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     if (it.data == "all")
                         AtAll
                     else {
-                        val member = bot?.getGroupOrNull(source.toLong())?.getOrNull(it.data.toLong())
+                        val member = bot.getGroupOrNull(source.toLong())?.getOrNull(it.data.toLong())
                         if (member != null) At(member) else PlainText("@无效")
                     }
                 }
@@ -154,25 +137,25 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun shutupAllMember(source: String, switch: Boolean) {
-        bot!!.getGroup(source.toLong()).settings.isMuteAll = switch
+        bot.getGroup(source.toLong()).settings.isMuteAll = switch
     }
 
     override suspend fun shutupMember(source: String, target: String, duration: Int) {
         if (duration == 0) {
-            bot!!.getGroup(source.toLong())[target.toLong()].unmute()
+            bot.getGroup(source.toLong())[target.toLong()].unmute()
         } else {
-            bot!!.getGroup(source.toLong())[target.toLong()].mute(duration * 60)
+            bot.getGroup(source.toLong())[target.toLong()].mute(duration * 60)
         }
     }
 
     override suspend fun getGroupList(): Array<String> {
-        return bot!!.groups.map {
+        return bot.groups.map {
             it.id.toString()
         }.toTypedArray()
     }
 
     override suspend fun getMemberList(id: String): Array<String> {
-        return bot!!.getGroup(id.toLong()).members.map {
+        return bot.getGroup(id.toLong()).members.map {
             it.id.toString()
         }.toTypedArray()
     }
@@ -201,9 +184,18 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
 fun main(args: Array<String>) {
     runBlocking<Unit> {
         try {
-            UBotClientHost.hostAccount(args[0], args[1], args[2]) { event ->
-                MiraiAccount(event, args[2], args[3]).also { it.login() }
+            var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
+            if (appFolder.isFile) {
+                appFolder = appFolder.parentFile
             }
+            val bot = QQAndroid.Bot(args[2].toLong(), args[3], BotConfiguration().apply {
+                fileBasedDeviceInfo(File(appFolder, "mirai.${args[2]}.device.json").absolutePath)
+            })
+            bot.login()
+            UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.selfQQ.id}") { event ->
+                MiraiAccount(event, bot)
+            }
+            bot.closeAndJoin()
         } catch (e: Exception) {
             println("Error occurred")
             e.printStackTrace()
