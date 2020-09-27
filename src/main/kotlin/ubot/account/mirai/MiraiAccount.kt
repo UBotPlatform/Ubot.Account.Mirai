@@ -1,5 +1,7 @@
 package ubot.account.mirai
 
+import io.ktor.client.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.closeAndJoin
@@ -15,7 +17,7 @@ import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.BotConfiguration
 import ubot.common.*
 import java.io.File
-import java.net.URL
+import java.io.InputStream
 import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
@@ -129,7 +131,9 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     }
                 }
                 "face" -> Face(it.data.toInt())
-                "image_online" -> contact.uploadImage(URL(it.data))
+                "image_online" -> HttpClient().use { client ->
+                    contact.uploadImage(client.get<InputStream>(it.data))
+                }
                 else -> PlainText("不支持的消息")
             }
         }
