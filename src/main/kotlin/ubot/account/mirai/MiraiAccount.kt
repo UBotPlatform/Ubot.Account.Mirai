@@ -175,6 +175,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 is PlainText -> builder.add(it.content)
                 is At -> builder.add("at", it.target.toString())
                 is AtAll -> builder.add("at", "all")
+                is Face -> builder.add("face", it.id.toString())
                 is Image -> builder.add("image_online", it.queryUrl())
                 is MessageMetadata -> {
                 }
