@@ -3,7 +3,9 @@ UBot is an open source platform for developing chat bots. It provides consistent
 
 ## About Account.Mirai
 This project is a Mirai backend for UBot Platform, making the bot run with the protocols that Mirai provides.  
-Mirai is a separate project by separate developers, implementing the protocol for a Chinese popular IM software (QQ).
+Mirai is a separate project by separate developers, implementing the protocol for a Chinese popular IM software (QQ).  
+For more details about Mirai, please [visit their GitHub Repository](https://github.com/mamoe/mirai).  
+This backend uses Mirai Core directly.  
 
 ## Usage
 ```bash
