@@ -18,6 +18,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
+import java.util.*
 import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
@@ -134,6 +135,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 "image_online" -> HttpClient().use { client ->
                     contact.uploadImage(client.get<InputStream>(it.data))
                 }
+                "image_base64" -> contact.uploadImage(Base64.getDecoder().wrap(it.data.byteInputStream()))
                 else -> PlainText("不支持的消息")
             }
         }
