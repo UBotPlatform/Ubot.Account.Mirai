@@ -15,6 +15,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.PlatformLogger
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
@@ -189,6 +191,9 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
 }
 
 fun main(args: Array<String>) {
+    DefaultLogger = { identity ->
+        PlatformLogger(identity, ::println, false)
+    }
     runBlocking<Unit> {
         try {
             var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
