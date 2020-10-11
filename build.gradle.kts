@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.10"
     id("com.github.johnrengelman.shadow") version "6.0.0"
     application
 }
@@ -14,8 +14,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
     implementation("io.ktor:ktor-client-cio:1.4.1")
-    implementation("com.github.UBotPlatform:Ubot.Common.Kotlin:0.4.4")
-    implementation("net.mamoe:mirai-core-qqandroid:1.3.1")
+    implementation("com.github.UBotPlatform:Ubot.Common.Kotlin:0.4.5") {
+        exclude("org.jetbrains.kotlinx", "kotlinx-serialization-json")
+    }
+    implementation("net.mamoe:mirai-core-qqandroid:1.3.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
