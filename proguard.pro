@@ -3,6 +3,11 @@
 -dontobfuscate
 -dontoptimize
 
+# Jansi
+-keep class org.fusesource.jansi.internal.**{
+    *;
+}
+
 # Ktor
 -keepclassmembers class io.ktor.** {
     volatile <fields>;

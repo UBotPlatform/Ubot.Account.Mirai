@@ -17,6 +17,7 @@ import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.PlatformLogger
+import org.fusesource.jansi.AnsiConsole
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
@@ -192,7 +193,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
 
 fun main(args: Array<String>) {
     DefaultLogger = { identity ->
-        PlatformLogger(identity, ::println, false)
+        PlatformLogger(identity, AnsiConsole.out::println, true)
     }
     runBlocking<Unit> {
         try {

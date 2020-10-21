@@ -34,6 +34,7 @@ dependencies {
     }
     implementation("net.mamoe:mirai-core-qqandroid:1.3.2")
     implementation("org.slf4j:slf4j-nop:1.7.30")
+    implementation("org.fusesource.jansi:jansi:1.18")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
