@@ -1,3 +1,7 @@
+## ATTENTION
+Due to conflicts with the Mirai team, the project was downgraded to **the lowest priority** and **can be stopped at any time** (without notice in advance).  
+All the backends for QQ is in lower priority since UBot is mainly aimed at the bot-friendly platforms.  
+
 ## About UBot
 UBot is an open source platform for developing chat bots. It provides consistent apis for different platforms (telegram, discord and more!) in a language-independent way, making bot development WORA-able (Write once, Run anywhere).
 
