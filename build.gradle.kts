@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import proguard.gradle.ProGuardTask
 
 buildscript {
@@ -9,13 +10,13 @@ buildscript {
     dependencies {
         // TODO: required due to https://github.com/Guardsquare/proguard/issues/30
         classpath("com.android.tools.build:gradle:3.0.0")
-        classpath("com.guardsquare:proguard-gradle:7.0.0")
+        classpath("com.guardsquare:proguard-gradle:7.0.1")
     }
 }
 
 plugins {
     kotlin("jvm") version "1.4.10"
-    id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
     application
 }
 
@@ -28,15 +29,22 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
-    implementation("io.ktor:ktor-client-cio:1.4.1")
-    implementation("com.github.UBotPlatform:Ubot.Common.Kotlin:0.4.5") {
-        exclude("org.jetbrains.kotlinx", "kotlinx-serialization-json")
-    }
-    implementation("net.mamoe:mirai-core-qqandroid:1.3.2")
+    implementation("com.github.UBotPlatform:Ubot.Common.Kotlin:0.4.5")
     implementation("org.slf4j:slf4j-nop:1.7.30")
     implementation("org.fusesource.jansi:jansi:1.18")
+
+    val miraiVersion = "2.0-RC"
+    api("net.mamoe:mirai-core-api:$miraiVersion")
+    runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 application {

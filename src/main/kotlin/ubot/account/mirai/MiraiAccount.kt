@@ -1,21 +1,18 @@
 package ubot.account.mirai
-
 import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.closeAndJoin
+import net.mamoe.mirai.BotFactory.INSTANCE.newBot
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.getGroupOrNull
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.uploadImage
-import net.mamoe.mirai.qqandroid.QQAndroid
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlatformLogger
 import org.fusesource.jansi.AnsiConsole
 import ubot.common.*
@@ -28,27 +25,28 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
     : BaseUBotAccount() {
     init {
-        bot.subscribeAlways<MemberJoinEvent> {
+        val e = GlobalEventChannel
+        e.subscribeAlways<MemberJoinEvent> {
             event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
         }
-        bot.subscribeAlways<MemberLeaveEvent> {
+        e.subscribeAlways<MemberLeaveEvent> {
             event.onMemberLeft(this.group.id.toString(), this.member.id.toString())
         }
-        bot.subscribeAlways<FriendMessageEvent> {
+        e.subscribeAlways<FriendMessageEvent> {
             event.onReceiveChatMessage(ChatMessageType.Private,
                     "",
                     this.sender.id.toString(),
                     toUBotMessage(this.message),
                     ChatMessageInfo())
         }
-        bot.subscribeAlways<GroupMessageEvent> {
+        e.subscribeAlways<GroupMessageEvent> {
             event.onReceiveChatMessage(ChatMessageType.Group,
                     this.group.id.toString(),
                     this.sender.id.toString(),
                     toUBotMessage(this.message),
                     ChatMessageInfo())
         }
-        bot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+        e.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
             val r = event.processGroupInvitation(this.invitorId.toString(),
                     this.groupId.toString(),
                     "")
@@ -57,7 +55,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 20 -> this.ignore()
             }
         }
-        bot.subscribeAlways<MemberJoinRequestEvent> {
+        e.subscribeAlways<MemberJoinRequestEvent> {
             val r = event.processMembershipRequest(this.groupId.toString(),
                     this.fromId.toString(),
                     "",
@@ -67,7 +65,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 20 -> this.reject(message = r.reason ?: "")
             }
         }
-        bot.subscribeAlways<NewFriendRequestEvent> {
+        e.subscribeAlways<NewFriendRequestEvent> {
             val r = event.processFriendRequest(this.fromId.toString(),
                     "")
             when (r.type) {
@@ -78,18 +76,18 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun getGroupName(id: String): String {
-        return bot.getGroup(id.toLong()).name
+        return bot.getGroupOrFail(id.toLong()).name
     }
 
     override suspend fun getMemberName(source: String, target: String): String {
         if (source.isEmpty()) {
-            return bot.getFriend(target.toLong()).nick
+            return bot.getFriendOrFail(target.toLong()).nick
         }
-        return bot.getGroup(source.toLong())[target.toLong()].nameCardOrNick
+        return bot.getGroupOrFail(source.toLong())[target.toLong()]!!.nameCardOrNick
     }
 
     override suspend fun getSelfID(): String {
-        return bot.selfQQ.id.toString()
+        return bot.id.toString()
     }
 
     override suspend fun getUserAvatar(id: String): String {
@@ -99,46 +97,54 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     override suspend fun getUserName(id: String): String {
         // stupid but useful
         val idLong = id.toLong()
-        for (group in bot.groups) {
-            val member = group.getOrNull(idLong)
-            if (member != null) {
-                return member.nick
+        bot.getFriend(idLong)?.apply {
+            return nick
+        }
+        bot.groups.forEach {
+            it[idLong]?.apply {
+                return nick
             }
         }
-        return bot.getFriend(idLong).nick
+        return "unknown"
     }
 
     override suspend fun removeMember(source: String, target: String) {
-        return bot.getGroup(source.toLong())[target.toLong()].kick()
+        bot.getGroupOrFail(source.toLong()).getOrFail(target.toLong()).kick("")
     }
 
     override suspend fun sendChatMessage(type: Int, source: String, target: String, message: String) {
         val contact = when (type) {
             ChatMessageType.Group ->
-                bot.getGroup(source.toLong())
+                bot.getGroupOrFail(source.toLong())
             ChatMessageType.Private ->
-                bot.getFriend(target.toLong())
+                bot.getFriendOrFail(target.toLong())
             else ->
                 throw IllegalArgumentException("invalid type")
         }
         val parsed = ChatMessageParser.Parse(message)
         val miraiMsgBuilder = MessageChainBuilder()
-        for (it in parsed) {
-            miraiMsgBuilder += when (it.type) {
-                "text" -> PlainText(it.data)
+        for (entity in parsed) {
+            miraiMsgBuilder += when (entity.type) {
+                "text" -> PlainText(entity.data)
                 "at" -> {
-                    if (it.data == "all")
+                    if (entity.data == "all")
                         AtAll
                     else {
-                        val member = bot.getGroupOrNull(source.toLong())?.getOrNull(it.data.toLong())
+                        val member = bot.getGroup(source.toLong())?.get(entity.data.toLong())
                         if (member != null) At(member) else PlainText("@无效")
                     }
                 }
-                "face" -> Face(it.data.toInt())
+                "face" -> Face(entity.data.toInt())
                 "image_online" -> HttpClient().use { client ->
-                    contact.uploadImage(client.get<InputStream>(it.data))
+                    client.get<InputStream>(entity.data).toExternalResource().use {
+                        contact.uploadImage(it)
+                    }
                 }
-                "image_base64" -> contact.uploadImage(Base64.getDecoder().wrap(it.data.byteInputStream()))
+                "image_base64" -> Base64.getDecoder().wrap(
+                        entity.data.byteInputStream()
+                ).toExternalResource().use {
+                    contact.uploadImage(it)
+                }
                 else -> PlainText("不支持的消息")
             }
         }
@@ -146,14 +152,14 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun shutupAllMember(source: String, switch: Boolean) {
-        bot.getGroup(source.toLong()).settings.isMuteAll = switch
+        bot.getGroupOrFail(source.toLong()).settings.isMuteAll = switch
     }
 
     override suspend fun shutupMember(source: String, target: String, duration: Int) {
         if (duration == 0) {
-            bot.getGroup(source.toLong())[target.toLong()].unmute()
+            bot.getGroupOrFail(source.toLong()).getOrFail(target.toLong()).unmute()
         } else {
-            bot.getGroup(source.toLong())[target.toLong()].mute(duration * 60)
+            bot.getGroupOrFail(source.toLong()).getOrFail(target.toLong()).mute(duration * 60)
         }
     }
 
@@ -164,7 +170,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 
     override suspend fun getMemberList(id: String): Array<String> {
-        return bot.getGroup(id.toLong()).members.map {
+        return bot.getGroupOrFail(id.toLong()).members.map {
             it.id.toString()
         }.toTypedArray()
     }
@@ -175,7 +181,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
 
     private suspend fun toUBotMessage(msg: Message): String {
         val builder = ChatMessageBuilder()
-        for (it in msg.flatten()) {
+        for (it in msg.toMessageChain()) {
             when (it) {
                 is PlainText -> builder.add(it.content)
                 is At -> builder.add("at", it.target.toString())
@@ -191,8 +197,9 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 }
 
+@MiraiInternalApi
 fun main(args: Array<String>) {
-    DefaultLogger = { identity ->
+    MiraiLogger.setDefaultLoggerCreator { identity ->
         PlatformLogger(identity, AnsiConsole.out::println, true)
     }
     runBlocking<Unit> {
@@ -201,11 +208,11 @@ fun main(args: Array<String>) {
             if (appFolder.isFile) {
                 appFolder = appFolder.parentFile
             }
-            val bot = QQAndroid.Bot(args[2].toLong(), args[3], BotConfiguration().apply {
+            val bot = newBot(args[2].toLong(), args[3], BotConfiguration().apply {
                 fileBasedDeviceInfo(File(appFolder, "mirai.${args[2]}.device.json").absolutePath)
             })
             bot.login()
-            UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.selfQQ.id}") { event ->
+            UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.id}") { event ->
                 MiraiAccount(event, bot)
             }
             bot.closeAndJoin()

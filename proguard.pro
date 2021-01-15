@@ -3,6 +3,14 @@
 -dontobfuscate
 -dontoptimize
 
+# Mirai
+-keep class net.mamoe.mirai.** implements net.mamoe.mirai.IMirai
+-keep enum net.mamoe.mirai.utils.BotConfiguration$MiraiProtocol { *; }
+
+# Bouncy Castle
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }
+
 # Jansi
 -keep class org.fusesource.jansi.internal.**{
     *;
