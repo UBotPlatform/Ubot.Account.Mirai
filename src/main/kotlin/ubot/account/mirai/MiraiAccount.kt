@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory.INSTANCE.newBot
 import net.mamoe.mirai.contact.nameCardOrNick
-import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
@@ -25,7 +24,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
     : BaseUBotAccount() {
     init {
-        val e = GlobalEventChannel
+        val e = bot.eventChannel
         e.subscribeAlways<MemberJoinEvent> {
             event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
         }
@@ -208,9 +207,9 @@ fun main(args: Array<String>) {
             if (appFolder.isFile) {
                 appFolder = appFolder.parentFile
             }
-            val bot = newBot(args[2].toLong(), args[3], BotConfiguration().apply {
+            val bot = newBot(args[2].toLong(), args[3]) {
                 fileBasedDeviceInfo(File(appFolder, "mirai.${args[2]}.device.json").absolutePath)
-            })
+            }
             bot.login()
             UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.id}") { event ->
                 MiraiAccount(event, bot)
