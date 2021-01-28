@@ -10,6 +10,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlatformLogger
@@ -136,13 +138,23 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 "face" -> Face(entity.data.toInt())
                 "image_online" -> HttpClient().use { client ->
                     client.get<InputStream>(entity.data).toExternalResource().use {
-                        contact.uploadImage(it)
+                        it.uploadAsImage(contact)
                     }
                 }
                 "image_base64" -> Base64.getDecoder().wrap(
                         entity.data.byteInputStream()
                 ).toExternalResource().use {
-                    contact.uploadImage(it)
+                    it.uploadAsImage(contact)
+                }
+                "voice_online" -> HttpClient().use { client ->
+                    client.get<InputStream>(entity.data).toExternalResource().use {
+                        it.uploadAsVoice(contact)
+                    }
+                }
+                "voice_base64" -> Base64.getDecoder().wrap(
+                        entity.data.byteInputStream()
+                ).toExternalResource().use {
+                    it.uploadAsVoice(contact)
                 }
                 else -> PlainText("不支持的消息")
             }
@@ -187,9 +199,10 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 is AtAll -> builder.add("at", "all")
                 is Face -> builder.add("face", it.id.toString())
                 is Image -> builder.add("image_online", it.queryUrl())
+                is Voice -> builder.add("voice_online", it.url ?: "")
                 is MessageMetadata -> {
                 }
-                else -> builder.add("不支持的消息")
+                else -> builder.add(it.contentToString())
             }
         }
         return builder.build()
