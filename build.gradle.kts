@@ -33,7 +33,7 @@ dependencies {
     implementation("org.slf4j:slf4j-nop:1.7.30")
     implementation("org.fusesource.jansi:jansi:1.18")
 
-    val miraiVersion = "2.1.0"
+    val miraiVersion = "2.1.1"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
