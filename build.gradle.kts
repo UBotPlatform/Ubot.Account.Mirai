@@ -15,25 +15,26 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.4.21"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     application
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     maven("https://jitpack.io")
+    maven("https://dl.bintray.com/mamoe/kotlin-jvm-blocking-bridge") //FIXME Binary are shutting down.
 }
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
-    implementation("com.github.UBotPlatform:Ubot.Common.Kotlin:0.4.5")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.1")
     implementation("org.slf4j:slf4j-nop:1.7.30")
     implementation("org.fusesource.jansi:jansi:1.18")
 
-    val miraiVersion = "2.1.1"
+    val miraiVersion = "2.4-M1-dev-publish-3"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
