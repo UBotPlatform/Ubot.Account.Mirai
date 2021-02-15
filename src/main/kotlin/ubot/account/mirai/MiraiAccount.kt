@@ -8,7 +8,6 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
@@ -220,8 +219,15 @@ fun main(args: Array<String>) {
             if (appFolder.isFile) {
                 appFolder = appFolder.parentFile
             }
+            val instanceFolder = File(appFolder, "Mirai${args[2]}")
+            instanceFolder.mkdir()
+            assert(instanceFolder.isDirectory) {
+                "Failed to create instance folder for ${args[2]}"
+            }
             val bot = newBot(args[2].toLong(), args[3]) {
-                fileBasedDeviceInfo(File(appFolder, "mirai.${args[2]}.device.json").absolutePath)
+                workingDir = instanceFolder
+                fileBasedDeviceInfo()
+                enableContactCache()
             }
             bot.login()
             UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.id}") { event ->
