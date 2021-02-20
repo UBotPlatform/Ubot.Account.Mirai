@@ -1,14 +1,17 @@
 ## ATTENTION
-Due to conflicts with the Mirai team, the project was downgraded to **the lowest priority** and **can be stopped at any time** (without notice in advance).  
+Due to conflicts with the Mirai team (#2), the project was downgraded to **the lowest priority** and **can be stopped at any time** (without notice in advance).  
 All the backends for QQ is in lower priority since UBot is mainly aimed at the bot-friendly platforms.  
 
 ## About UBot
 UBot is an open source platform for developing chat bots. It provides consistent apis for different platforms (telegram, discord and more!) in a language-independent way, making bot development WORA-able (Write once, Run anywhere).
 
-## About Account.Mirai
-This project is a Mirai backend for UBot Platform, making the bot run with the protocols that Mirai provides.  
+## About Mirai
+![mirai](https://socialify.git.ci/mamoe/mirai/image?description=1&descriptionEditable=High-performance%20bot%20framework%20for%20Tencent%20QQ&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2Fmamoe%2Fmirai%2Fraw%2Fdev%2Fdocs%2Fmirai.png&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Light)  
 Mirai is a separate project by separate developers, implementing the protocol for a Chinese popular IM software (QQ).  
 For more details about Mirai, please [visit their GitHub Repository](https://github.com/mamoe/mirai).  
+
+## About Account.Mirai
+This project is a Mirai backend for UBot Platform, making the bot run with the protocols that Mirai provides.  
 This backend uses Mirai Core directly.  
 
 ## Usage
