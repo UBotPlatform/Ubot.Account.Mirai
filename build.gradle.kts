@@ -5,17 +5,14 @@ import proguard.gradle.ProGuardTask
 buildscript {
     repositories {
         jcenter()
-        google()
     }
     dependencies {
-        // TODO: required due to https://github.com/Guardsquare/proguard/issues/30
-        classpath("com.android.tools.build:gradle:3.0.0")
-        classpath("com.guardsquare:proguard-gradle:7.0.1")
+        classpath("com.guardsquare:proguard-gradle:7.1.0-beta1")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     application
 }
@@ -23,7 +20,6 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
-    maven("https://dl.bintray.com/mamoe/kotlin-jvm-blocking-bridge") //FIXME Binary are shutting down.
 }
 
 dependencies {
@@ -33,8 +29,9 @@ dependencies {
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.1")
     implementation("org.slf4j:slf4j-nop:1.7.30")
     implementation("org.fusesource.jansi:jansi:1.18")
+    implementation("net.mamoe:kotlin-jvm-blocking-bridge:1.10.2")
 
-    val miraiVersion = "2.4.0"
+    val miraiVersion = "2.5-M2"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
