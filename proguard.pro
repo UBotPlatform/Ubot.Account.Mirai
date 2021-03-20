@@ -4,8 +4,25 @@
 -dontoptimize
 
 # Mirai
--keep class net.mamoe.mirai.** implements net.mamoe.mirai.IMirai
--keep enum net.mamoe.mirai.utils.BotConfiguration$MiraiProtocol { *; }
+-keep enum net.mamoe.mirai.** {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+-keepnames class net.mamoe.mirai.Mirai
+-keepnames class net.mamoe.mirai.MiraiImpl
+-keepclassmembers class net.mamoe.mirai.** {
+    volatile <fields>;
+}
+-keepclassmembernames class net.mamoe.mirai.** {
+    volatile <fields>;
+}
+-keep,includedescriptorclasses class net.mamoe.mirai.**$$serializer { *; }
+-keepclassmembers class net.mamoe.mirai.** {
+    *** Companion;
+}
+-keepclasseswithmembers class net.mamoe.mirai.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
 # Bouncy Castle
 -keep class org.bouncycastle.jcajce.provider.** { *; }
@@ -54,7 +71,7 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Data Classes
+# KtUBotCommon
 -keep,includedescriptorclasses class ubot.**$$serializer { *; }
 -keepclassmembers class ubot.** {
     *** Companion;
@@ -62,37 +79,10 @@
 -keepclasseswithmembers class ubot.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep,includedescriptorclasses class net.mamoe.mirai.**$$serializer { *; }
--keepclassmembers class net.mamoe.mirai.** {
-    *** Companion;
-}
--keepclasseswithmembers class net.mamoe.mirai.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
 
-# Remove slf4j log
--assumenosideeffects class * implements org.slf4j.Logger {
-    public *** trace(...);
-    public *** debug(...);
-    public *** info(...);
-    public *** warn(...);
-    public *** error(...);
-}
-
-# Remove Null Check
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    public static void checkExpressionValueIsNotNull(java.lang.Object, java.lang.String);
-    public static void checkFieldIsNotNull(java.lang.Object, java.lang.String);
-    public static void checkFieldIsNotNull(java.lang.Object, java.lang.String, java.lang.String);
-    public static void checkNotNull(java.lang.Object);
-    public static void checkNotNull(java.lang.Object, java.lang.String);
-    public static void checkNotNullExpressionValue(java.lang.Object, java.lang.String);
-    public static void checkNotNullParameter(java.lang.Object, java.lang.String);
-    public static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-    public static void checkReturnedValueIsNotNull(java.lang.Object, java.lang.String);
-    public static void checkReturnedValueIsNotNull(java.lang.Object, java.lang.String, java.lang.String);
-    public static void throwUninitializedPropertyAccessException(java.lang.String);
-}
+# slf4j
+-keep class org.slf4j.impl.** { *; }
+-keep class net.mamoe.mirai.logger.bridge.slf4j.** { *; }
 
 # Entry
 -keepclasseswithmembers public class ubot.account.mirai.MiraiAccountKt {

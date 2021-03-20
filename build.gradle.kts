@@ -19,6 +19,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://dl.bintray.com/karlatemp/mirai/")
     maven("https://jitpack.io")
 }
 
@@ -26,12 +27,11 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
-    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.1")
-    implementation("org.slf4j:slf4j-nop:1.7.30")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.2")
     implementation("org.fusesource.jansi:jansi:1.18")
-    implementation("net.mamoe:kotlin-jvm-blocking-bridge:1.10.2")
+    implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
 
-    val miraiVersion = "2.5-M2"
+    val miraiVersion = "2.5-RC-dev-2"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
