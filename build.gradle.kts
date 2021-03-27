@@ -26,12 +26,12 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.2")
-    implementation("org.fusesource.jansi:jansi:1.18")
+    implementation("org.fusesource.jansi:jansi:2.3.2")
     implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
 
-    val miraiVersion = "2.5-RC-dev-2"
+    val miraiVersion = "2.5.0"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 

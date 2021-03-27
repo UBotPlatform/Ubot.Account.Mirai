@@ -211,7 +211,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
 @MiraiInternalApi
 fun main(args: Array<String>) {
     MiraiLogger.setDefaultLoggerCreator { identity ->
-        PlatformLogger(identity, AnsiConsole.out::println, true)
+        PlatformLogger(identity, AnsiConsole.out()::println, true)
     }
     runBlocking<Unit> {
         try {
