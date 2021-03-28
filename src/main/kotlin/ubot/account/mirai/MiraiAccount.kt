@@ -1,4 +1,12 @@
 package ubot.account.mirai
+
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
+import com.github.ajalt.clikt.parameters.types.long
 import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
@@ -8,6 +16,7 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
@@ -19,7 +28,6 @@ import ubot.common.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
-import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
@@ -208,37 +216,58 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
     }
 }
 
-@MiraiInternalApi
-fun main(args: Array<String>) {
-    MiraiLogger.setDefaultLoggerCreator { identity ->
-        PlatformLogger(identity, AnsiConsole.out()::println, true)
+class MiraiCommand : CliktCommand() {
+    private val ubotOp: String by argument("UBotOp")
+    private val ubotAddr: String by argument("UBotAddr")
+    private val qqId: Long by argument("QQID").long()
+    private val qqPassword: String by argument("QQPassword")
+    private val cache: Boolean by option(
+        "--cache",
+        help = "Enable or disable contact cache"
+    ).flag("--no-cache", default = true)
+    private val protocol: BotConfiguration.MiraiProtocol by option(
+        "-p",
+        "--protocol"
+    ).enum<BotConfiguration.MiraiProtocol>(ignoreCase = true)
+        .default(BotConfiguration.MiraiProtocol.ANDROID_PHONE)
+
+    private val workingDir: File by lazy {
+        var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
+        if (appFolder.isFile) {
+            appFolder = appFolder.parentFile
+        }
+        val workingDir = File(appFolder, "Mirai${qqId}")
+        workingDir.mkdir()
+        assert(workingDir.isDirectory) {
+            "Failed to create instance folder for ${qqId}"
+        }
+        workingDir
     }
-    runBlocking<Unit> {
-        try {
-            var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
-            if (appFolder.isFile) {
-                appFolder = appFolder.parentFile
-            }
-            val instanceFolder = File(appFolder, "Mirai${args[2]}")
-            instanceFolder.mkdir()
-            assert(instanceFolder.isDirectory) {
-                "Failed to create instance folder for ${args[2]}"
-            }
-            val bot = newBot(args[2].toLong(), args[3]) {
-                workingDir = instanceFolder
+
+    @MiraiInternalApi
+    override fun run() {
+        MiraiLogger.setDefaultLoggerCreator { identity ->
+            PlatformLogger(identity, AnsiConsole.out()::println, true)
+        }
+        runBlocking {
+            val bot = newBot(qqId, qqPassword) {
+                parentCoroutineContext = coroutineContext
+                workingDir = this@MiraiCommand.workingDir
+                protocol = this@MiraiCommand.protocol
                 fileBasedDeviceInfo()
-                enableContactCache()
+                if (cache) {
+                    enableContactCache()
+                } else {
+                    disableContactCache()
+                }
             }
             bot.login()
-            UBotClientHost.hostAccount(args[0], args[1], "QQ${bot.id}") { event ->
+            UBotClientHost.hostAccount(ubotOp, ubotAddr, "QQ${bot.id}") { event ->
                 MiraiAccount(event, bot)
             }
             bot.closeAndJoin()
-        } catch (e: Exception) {
-            println("Error occurred")
-            e.printStackTrace()
         }
-        println("Session ended")
-        exitProcess(0)
     }
 }
+
+fun main(args: Array<String>) = MiraiCommand().main(args)

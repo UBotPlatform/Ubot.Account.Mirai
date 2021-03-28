@@ -30,6 +30,7 @@ dependencies {
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.5.2")
     implementation("org.fusesource.jansi:jansi:2.3.2")
     implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
+    implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
     val miraiVersion = "2.5.0"
     api("net.mamoe:mirai-core-api:$miraiVersion")
