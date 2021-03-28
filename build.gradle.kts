@@ -67,11 +67,13 @@ tasks.register<ProGuardTask>("shrinkShadowJar") {
         libraryjars("$javaHome/lib/rt.jar")
     } else {
         // As of Java 9, the runtime classes are packaged in modular jmod files.
-        libraryjars(
-                // filters must be specified first, as a map
-                mapOf("jarfilter" to "!**.jar",
-                        "filter" to "!module-info.class"),
-                "$javaHome/jmods/java.base.jmod"
-        )
+        File(javaHome, "jmods").listFiles().orEmpty().forEach { file ->
+            libraryjars(
+                mapOf(
+                    "jarfilter" to "!**.jar",
+                    "filter" to "!module-info.class"
+                ), file
+            )
+        }
     }
 }
