@@ -28,6 +28,7 @@ import ubot.common.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
+import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
@@ -267,6 +268,7 @@ class MiraiCommand : CliktCommand() {
             }
             bot.closeAndJoin()
         }
+        exitProcess(0)
     }
 }
 
