@@ -58,7 +58,12 @@ tasks.withType<Jar> {
 
 val shadowJar = tasks.getByName<ShadowJar>("shadowJar")
 tasks.register<ProGuardTask>("shrinkShadowJar") {
-    configuration("proguard.pro")
+    zipTree(shadowJar.archiveFile).matching {
+        include("META-INF/proguard/*.pro")
+    }.forEach {
+        configuration(it)
+    }
+    configuration("proguard-rules.pro")
     injars(shadowJar)
     outjars("$buildDir/libs/${project.name}-all-shrunk.jar")
     val javaHome = System.getProperty("java.home")

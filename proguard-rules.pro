@@ -1,4 +1,4 @@
--dontwarn
+-ignorewarnings
 -allowaccessmodification
 -dontobfuscate
 -dontoptimize
@@ -33,34 +33,6 @@
     *;
 }
 
-# Ktor
--keepclassmembers class io.ktor.** {
-    volatile <fields>;
-}
--keepclassmembernames class io.ktor.** {
-    volatile <fields>;
-}
--keep class io.ktor.client.engine.** implements io.ktor.client.HttpClientEngineContainer
-
-# Coroutines
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepclassmembernames class kotlinx.** {
-    volatile <fields>;
-}
--keepclassmembernames class kotlin.coroutines.SafeContinuation {
-    volatile <fields>;
-}
-
-# Kotlin Reflect
--keep class kotlin.Metadata { *; }
--keep interface kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader
--keep class * implements kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader { public protected *; }
--keep interface kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition
--keep class * implements kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition { public protected *; }
--keepattributes InnerClasses,Signature,RuntimeVisible*Annotations,EnclosingMethod
--dontnote kotlin.internal.PlatformImplementationsKt
-
 # Kotlinx Serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
@@ -82,7 +54,6 @@
 
 # slf4j
 -keep class org.slf4j.impl.** { *; }
--keep class net.mamoe.mirai.logger.bridge.slf4j.** { *; }
 
 # Entry
 -keepclasseswithmembers public class ubot.account.mirai.MiraiAccountKt {
