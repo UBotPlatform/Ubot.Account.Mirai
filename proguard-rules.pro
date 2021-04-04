@@ -16,13 +16,6 @@
 -keepclassmembernames class net.mamoe.mirai.** {
     volatile <fields>;
 }
--keep,includedescriptorclasses class net.mamoe.mirai.**$$serializer { *; }
--keepclassmembers class net.mamoe.mirai.** {
-    *** Companion;
-}
--keepclasseswithmembers class net.mamoe.mirai.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
 
 # Bouncy Castle
 -keep class org.bouncycastle.jcajce.provider.** { *; }
@@ -36,20 +29,15 @@
 # Kotlinx Serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keepclassmembers class kotlinx.serialization.json.** {
+-keepclassmembers @kotlinx.serialization.Serializable class ** {
     *** Companion;
 }
--keepclasseswithmembers class kotlinx.serialization.json.** {
+-if @kotlinx.serialization.Serializable class **
+-keepclassmembers class <1>$Companion {
     kotlinx.serialization.KSerializer serializer(...);
 }
-
-# KtUBotCommon
--keep,includedescriptorclasses class ubot.**$$serializer { *; }
--keepclassmembers class ubot.** {
-    *** Companion;
-}
--keepclasseswithmembers class ubot.** {
-    kotlinx.serialization.KSerializer serializer(...);
+-keepclasseswithmembers class **$$serializer {
+    *** INSTANCE;
 }
 
 # slf4j
