@@ -32,7 +32,7 @@ dependencies {
     implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    val miraiVersion = "2.6-M1"
+    val miraiVersion = "2.6-M2"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
