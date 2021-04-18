@@ -32,9 +32,17 @@ dependencies {
     implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    val miraiVersion = "2.6-M2"
+    val miraiVersion = "2.6.1"
     api("net.mamoe:mirai-core-api:$miraiVersion")
+    {
+        // Work around mamoe/mirai#1197
+        exclude("org.jetbrains.kotlin", "kotlin-serialization")
+    }
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
+    {
+        // Work around mamoe/mirai#1197
+        exclude("org.jetbrains.kotlin", "kotlin-serialization")
+    }
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
