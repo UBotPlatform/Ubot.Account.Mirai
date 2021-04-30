@@ -13,7 +13,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.4.30"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     application
 }
 
@@ -57,12 +57,12 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 application {
-    mainClassName = "ubot.account.mirai.MiraiAccountKt"
+    mainClass.set("ubot.account.mirai.MiraiAccountKt")
 }
 
 tasks.withType<Jar> {
     manifest {
-        attributes("Main-Class" to application.mainClassName)
+        attributes("Main-Class" to application.mainClass)
     }
 }
 
