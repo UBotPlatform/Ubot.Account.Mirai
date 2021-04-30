@@ -4,10 +4,10 @@ import proguard.gradle.ProGuardTask
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.1.0-beta2")
+        classpath("com.guardsquare:proguard-gradle:7.1.0-beta3")
     }
 }
 
@@ -19,7 +19,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven("https://dl.bintray.com/karlatemp/mirai/")
     maven("https://jitpack.io")
 }
 
@@ -29,7 +28,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.6.0")
     implementation("org.fusesource.jansi:jansi:2.3.2")
-    implementation("net.mamoe:mirai-slf4j-bridge:1.1.0")
+    implementation("com.github.project-mirai:mirai-slf4j-bridge:a84f76ac31")
+    {
+        exclude("io.github.karlatemp","unsafe-accessor")
+    }
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
     val miraiVersion = "2.6.1"
