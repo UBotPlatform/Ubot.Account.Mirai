@@ -268,7 +268,6 @@ class MiraiCommand : CliktCommand() {
             }
             bot.closeAndJoin()
         }
-        exitProcess(0)
     }
 }
 

@@ -22,11 +22,19 @@ repositories {
     maven("https://jitpack.io")
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Work around
+        // Wait Mirai compatible with Kotlin Stdlib v1.5.0
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
+    }
+}
+
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.6.0")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.6.1")
     implementation("org.fusesource.jansi:jansi:2.3.2")
     implementation("com.github.project-mirai:mirai-slf4j-bridge:a84f76ac31")
     {
@@ -34,17 +42,9 @@ dependencies {
     }
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    val miraiVersion = "2.6.1"
+    val miraiVersion = "2.7-M1-dev-2"
     api("net.mamoe:mirai-core-api:$miraiVersion")
-    {
-        // Work around mamoe/mirai#1197
-        exclude("org.jetbrains.kotlin", "kotlin-serialization")
-    }
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
-    {
-        // Work around mamoe/mirai#1197
-        exclude("org.jetbrains.kotlin", "kotlin-serialization")
-    }
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
