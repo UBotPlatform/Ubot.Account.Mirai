@@ -62,6 +62,7 @@ val shadowJar = tasks.getByName<ShadowJar>("shadowJar")
 tasks.register<ProGuardTask>("shrinkShadowJar") {
     zipTree(shadowJar.archiveFile).matching {
         include("META-INF/proguard/*.pro")
+        include("WEB-INF/proguard/*.pro")
     }.forEach {
         configuration(it)
     }
