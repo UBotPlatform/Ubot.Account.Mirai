@@ -244,7 +244,11 @@ class MiraiCommand : CliktCommand() {
         "--protocol"
     ).enum<BotConfiguration.MiraiProtocol>(ignoreCase = true)
         .default(BotConfiguration.MiraiProtocol.ANDROID_PHONE)
-
+    private val heartbeatStrategy: BotConfiguration.HeartbeatStrategy by option(
+        "-hb",
+        "--heartbeat"
+    ).enum<BotConfiguration.HeartbeatStrategy>(ignoreCase = true)
+        .default(BotConfiguration.HeartbeatStrategy.STAT_HB)
     private val workingDir: File by lazy {
         var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
         if (appFolder.isFile) {
@@ -268,6 +272,7 @@ class MiraiCommand : CliktCommand() {
                 parentCoroutineContext = coroutineContext
                 workingDir = this@MiraiCommand.workingDir
                 protocol = this@MiraiCommand.protocol
+                heartbeatStrategy = this@MiraiCommand.heartbeatStrategy
                 fileBasedDeviceInfo()
                 if (cache) {
                     enableContactCache()
