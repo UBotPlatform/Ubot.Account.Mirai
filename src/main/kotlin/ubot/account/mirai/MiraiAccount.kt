@@ -262,7 +262,7 @@ class MiraiCommand : CliktCommand() {
         workingDir
     }
 
-    @MiraiInternalApi
+    @OptIn(MiraiInternalApi::class)
     override fun run() {
         MiraiLogger.setDefaultLoggerCreator { identity ->
             PlatformLogger(identity, AnsiConsole.out()::println, true)

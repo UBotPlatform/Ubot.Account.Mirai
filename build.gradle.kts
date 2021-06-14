@@ -48,6 +48,10 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
+kotlin.sourceSets.all {
+    languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+}
+
 application {
     mainClass.set("ubot.account.mirai.MiraiAccountKt")
 }
