@@ -36,52 +36,63 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         bot.coroutineContext[Job]?.invokeOnCompletion {
             client.close()
         }
-        val e = bot.eventChannel
-        e.subscribeAlways<MemberJoinEvent> {
-            event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
-        }
-        e.subscribeAlways<MemberLeaveEvent> {
-            event.onMemberLeft(this.group.id.toString(), this.member.id.toString())
-        }
-        e.subscribeAlways<FriendMessageEvent> {
-            event.onReceiveChatMessage(ChatMessageType.Private,
+        bot.eventChannel.run {
+            subscribeAlways<MemberJoinEvent> {
+                event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
+            }
+            subscribeAlways<MemberLeaveEvent> {
+                event.onMemberLeft(this.group.id.toString(), this.member.id.toString())
+            }
+            subscribeAlways<FriendMessageEvent> {
+                event.onReceiveChatMessage(
+                    ChatMessageType.Private,
                     "",
                     this.sender.id.toString(),
                     toUBotMessage(this.message),
-                    ChatMessageInfo())
-        }
-        e.subscribeAlways<GroupMessageEvent> {
-            event.onReceiveChatMessage(ChatMessageType.Group,
+                    ChatMessageInfo()
+                )
+            }
+            subscribeAlways<GroupMessageEvent> {
+                event.onReceiveChatMessage(
+                    ChatMessageType.Group,
                     this.group.id.toString(),
                     this.sender.id.toString(),
                     toUBotMessage(this.message),
-                    ChatMessageInfo())
-        }
-        e.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
-            val r = event.processGroupInvitation(this.invitorId.toString(),
-                    this.groupId.toString(),
-                    "")
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.ignore()
+                    ChatMessageInfo()
+                )
             }
-        }
-        e.subscribeAlways<MemberJoinRequestEvent> {
-            val r = event.processMembershipRequest(this.groupId.toString(),
+            subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+                val r = event.processGroupInvitation(
+                    this.invitorId.toString(),
+                    this.groupId.toString(),
+                    ""
+                )
+                when (r.type) {
+                    10 -> this.accept()
+                    20 -> this.ignore()
+                }
+            }
+            subscribeAlways<MemberJoinRequestEvent> {
+                val r = event.processMembershipRequest(
+                    this.groupId.toString(),
                     this.fromId.toString(),
                     "",
-                    this.message)
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.reject(message = r.reason ?: "")
+                    this.message
+                )
+                when (r.type) {
+                    10 -> this.accept()
+                    20 -> this.reject(message = r.reason ?: "")
+                }
             }
-        }
-        e.subscribeAlways<NewFriendRequestEvent> {
-            val r = event.processFriendRequest(this.fromId.toString(),
-                    "")
-            when (r.type) {
-                10 -> this.accept()
-                20 -> this.reject()
+            subscribeAlways<NewFriendRequestEvent> {
+                val r = event.processFriendRequest(
+                    this.fromId.toString(),
+                    ""
+                )
+                when (r.type) {
+                    10 -> this.accept()
+                    20 -> this.reject()
+                }
             }
         }
     }
