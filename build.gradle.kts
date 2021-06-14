@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.6.4")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.7.0")
     implementation("org.fusesource.jansi:jansi:2.3.2")
     implementation("com.github.project-mirai:mirai-slf4j-bridge:a84f76ac31")
     {

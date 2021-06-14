@@ -9,31 +9,33 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.long
 import io.ktor.client.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory.INSTANCE.newBot
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlatformLogger
 import org.fusesource.jansi.AnsiConsole
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
-import kotlin.system.exitProcess
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
     : BaseUBotAccount() {
+    private val client = HttpClient()
     init {
+        bot.coroutineContext[Job]?.invokeOnCompletion {
+            client.close()
+        }
         val e = bot.eventChannel
         e.subscribeAlways<MemberJoinEvent> {
             event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
@@ -130,44 +132,44 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
             else ->
                 throw IllegalArgumentException("invalid type")
         }
-        val parsed = ChatMessageParser.Parse(message)
+        val parsed = ChatMessageParser.parse(message)
         val miraiMsgBuilder = MessageChainBuilder()
         for (entity in parsed) {
-            miraiMsgBuilder += when (entity.type) {
-                "text" -> PlainText(entity.data)
+            when (entity.type) {
+                "text" -> entity.args.firstOrNull()?.let(::PlainText)
                 "at" -> {
-                    if (entity.data == "all")
-                        AtAll
-                    else {
-                        val member = bot.getGroup(source.toLong())?.get(entity.data.toLong())
-                        if (member != null) At(member) else PlainText("@无效")
+                    entity.args.firstOrNull()?.let {
+                        when (it) {
+                            "all" -> AtAll
+                            else -> it.toLongOrNull()?.let { toAt ->
+                                (contact as? Group)?.get(toAt)?.let { member ->
+                                    At(member)
+                                }
+                            }
+                        }
                     }
                 }
-                "face" -> Face(entity.data.toInt())
-                "image_online" -> HttpClient().use { client ->
-                    client.get<InputStream>(entity.data).toExternalResource().use {
-                        it.uploadAsImage(contact)
-                    }
-                }
-                "image_base64" -> Base64.getDecoder().wrap(
-                        entity.data.byteInputStream()
-                ).toExternalResource().use {
+                "face" -> entity.args.firstOrNull()?.toInt()?.let(::Face)
+                "image" -> fetchExternalResource(entity)?.use {
                     it.uploadAsImage(contact)
                 }
-                "voice_online" -> HttpClient().use { client ->
-                    client.get<InputStream>(entity.data).toExternalResource().use {
-                        it.uploadAsVoice(contact)
-                    }
-                }
-                "voice_base64" -> Base64.getDecoder().wrap(
-                        entity.data.byteInputStream()
-                ).toExternalResource().use {
+                "voice" -> fetchExternalResource(entity)?.use {
                     it.uploadAsVoice(contact)
                 }
                 else -> PlainText("不支持的消息")
-            }
+            }?.let(miraiMsgBuilder::add)
         }
         contact.sendMessage(miraiMsgBuilder.build())
+    }
+
+    private suspend fun fetchExternalResource(entity: ChatMessageEntity): ExternalResource? {
+        entity.namedArgs["base64"]?.let {
+            return Base64.getDecoder().wrap(it.byteInputStream()).toExternalResource()
+        }
+        entity.args.firstOrNull()?.let {
+            return client.get<InputStream>(it).toExternalResource()
+        }
+        return null
     }
 
     override suspend fun shutupAllMember(source: String, switch: Boolean) {
@@ -206,8 +208,8 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 is At -> builder.add("at", it.target.toString())
                 is AtAll -> builder.add("at", "all")
                 is Face -> builder.add("face", it.id.toString())
-                is Image -> builder.add("image_online", it.queryUrl())
-                is Voice -> builder.add("voice_online", it.url ?: "")
+                is Image -> builder.add("image", it.queryUrl())
+                is Voice -> builder.add("voice", it.url ?: "")
                 is MessageMetadata -> {
                 }
                 else -> builder.add(it.contentToString())
