@@ -256,7 +256,7 @@ class MiraiCommand : CliktCommand() {
         }
         val workingDir = File(appFolder, "Mirai${qqId}")
         workingDir.mkdir()
-        assert(workingDir.isDirectory) {
+        check(workingDir.isDirectory) {
             "Failed to create instance folder for ${qqId}"
         }
         workingDir
