@@ -172,6 +172,11 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 "voice" -> entity.fetchExternalResource {
                     it.uploadAsVoice(contact)
                 }
+                "qq_app" -> entity.args.firstOrNull()?.let(::LightApp)
+                "qq_service" -> entity.args.firstOrNull()?.let {
+                    @OptIn(MiraiExperimentalApi::class)
+                    SimpleServiceMessage(entity.namedArgs["service_id"]?.toIntOrNull() ?: 0, it)
+                }
                 else -> PlainText("不支持的消息")
             }?.let(miraiMsgBuilder::add)
         }
@@ -234,6 +239,14 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 is Face -> builder.add("face", it.id.toString())
                 is Image -> builder.add("image", it.queryUrl())
                 is Voice -> builder.add("voice", it.url ?: "")
+                is LightApp -> builder.add("qq_app", it.content)
+                is ServiceMessage -> builder.add(
+                    ChatMessageEntity(
+                        "qq_service",
+                        listOf(it.content),
+                        mapOf("service_id" to it.serviceId.toString())
+                    )
+                )
                 is MessageMetadata -> {
                 }
                 else -> builder.add(it.contentToString())
