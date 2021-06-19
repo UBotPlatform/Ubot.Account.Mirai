@@ -149,7 +149,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 throw IllegalArgumentException("invalid type")
         }
         val parsed = ChatMessageParser.parse(message)
-        val miraiMsgBuilder = MessageChainBuilder()
+        val chain = MessageChainBuilder()
         for (entity in parsed) {
             when (entity.type) {
                 "text" -> entity.args.firstOrNull()?.let(::PlainText)
@@ -178,9 +178,21 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     SimpleServiceMessage(entity.namedArgs["service_id"]?.toIntOrNull() ?: 0, it)
                 }
                 else -> PlainText("不支持的消息")
-            }?.let(miraiMsgBuilder::add)
+            }?.also { msg: SingleMessage ->
+                when (msg) {
+                    is ConstrainSingle -> {
+                        if (chain.isNotEmpty()) {
+                            contact.sendMessage(chain.build())
+                            chain.clear()
+                        }
+                    }
+                    else -> chain.add(msg)
+                }
+            }
         }
-        contact.sendMessage(miraiMsgBuilder.build())
+        if (chain.isNotEmpty()) {
+            contact.sendMessage(chain.build())
+        }
     }
 
     @OptIn(ExperimentalContracts::class)
