@@ -9,8 +9,10 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.long
 import io.ktor.client.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory.INSTANCE.newBot
 import net.mamoe.mirai.contact.Group
@@ -27,6 +29,9 @@ import ubot.common.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
@@ -161,10 +166,10 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     }
                 }
                 "face" -> entity.args.firstOrNull()?.toInt()?.let(::Face)
-                "image" -> fetchExternalResource(entity)?.use {
+                "image" -> entity.fetchExternalResource {
                     it.uploadAsImage(contact)
                 }
-                "voice" -> fetchExternalResource(entity)?.use {
+                "voice" -> entity.fetchExternalResource {
                     it.uploadAsVoice(contact)
                 }
                 else -> PlainText("不支持的消息")
@@ -173,12 +178,20 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         contact.sendMessage(miraiMsgBuilder.build())
     }
 
-    private suspend fun fetchExternalResource(entity: ChatMessageEntity): ExternalResource? {
-        entity.namedArgs["base64"]?.let {
-            return Base64.getDecoder().wrap(it.byteInputStream()).toExternalResource()
+    @OptIn(ExperimentalContracts::class)
+    private suspend inline fun <R> ChatMessageEntity.fetchExternalResource(block: (ExternalResource) -> R): R? {
+        contract {
+            callsInPlace(block, InvocationKind.AT_MOST_ONCE)
         }
-        entity.args.firstOrNull()?.let {
-            return client.get<InputStream>(it).toExternalResource()
+        namedArgs["base64"]?.let { base64 ->
+            return Base64.getDecoder().decode(base64).toExternalResource().use(block)
+        }
+        args.firstOrNull()?.let { url ->
+            return client.get<InputStream>(url).use {
+                runInterruptible(Dispatchers.IO) {
+                    it.toExternalResource()
+                }
+            }.use(block)
         }
         return null
     }
