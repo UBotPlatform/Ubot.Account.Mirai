@@ -34,7 +34,7 @@ dependencies {
     }
     implementation("com.github.ajalt.clikt:clikt:3.2.0")
 
-    val miraiVersion = "2.7-M1-dev-6"
+    val miraiVersion = "2.7-M1"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
