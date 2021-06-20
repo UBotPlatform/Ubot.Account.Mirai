@@ -150,6 +150,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         }
         val parsed = ChatMessageParser.parse(message)
         val chain = MessageChainBuilder()
+        var hasConstrainSingle = false
         for (entity in parsed) {
             when (entity.type) {
                 "text" -> entity.args.firstOrNull()?.let(::PlainText)
@@ -179,15 +180,15 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 }
                 else -> PlainText("不支持的消息")
             }?.also { msg: SingleMessage ->
-                when (msg) {
-                    is ConstrainSingle -> {
-                        if (chain.isNotEmpty()) {
-                            contact.sendMessage(chain.build())
-                            chain.clear()
-                        }
+                if (msg is ConstrainSingle) {
+                    if (hasConstrainSingle) {
+                        contact.sendMessage(chain.build())
+                        chain.clear()
+                    } else {
+                        hasConstrainSingle = true
                     }
-                    else -> chain.add(msg)
                 }
+                chain.add(msg)
             }
         }
         if (chain.isNotEmpty()) {
