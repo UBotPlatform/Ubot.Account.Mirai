@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.1.0-beta5")
+        classpath("com.guardsquare:proguard-gradle:7.1.0")
     }
 }
 
@@ -25,16 +25,16 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.0")
-    implementation("org.fusesource.jansi:jansi:2.3.2")
+    implementation("org.fusesource.jansi:jansi:2.3.3")
     implementation("com.github.project-mirai:mirai-slf4j-bridge:a84f76ac31")
     {
         exclude("io.github.karlatemp","unsafe-accessor")
     }
     implementation("com.github.ajalt.clikt:clikt:3.2.0")
 
-    val miraiVersion = "2.7-M1"
+    val miraiVersion = "2.7-M2"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
