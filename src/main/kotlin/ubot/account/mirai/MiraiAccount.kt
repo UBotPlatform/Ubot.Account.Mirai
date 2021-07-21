@@ -73,8 +73,8 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     ""
                 )
                 when (r.type) {
-                    10 -> this.accept()
-                    20 -> this.ignore()
+                    UBotEventResult.Type.Accept -> this.accept()
+                    UBotEventResult.Type.Reject -> this.ignore()
                 }
             }
             subscribeAlways<MemberJoinRequestEvent> {
@@ -85,8 +85,8 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     this.message
                 )
                 when (r.type) {
-                    10 -> this.accept()
-                    20 -> this.reject(message = r.reason ?: "")
+                    UBotEventResult.Type.Accept -> this.accept()
+                    UBotEventResult.Type.Reject -> this.reject(message = r.reason ?: "")
                 }
             }
             subscribeAlways<NewFriendRequestEvent> {
@@ -95,8 +95,8 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                     ""
                 )
                 when (r.type) {
-                    10 -> this.accept()
-                    20 -> this.reject()
+                    UBotEventResult.Type.Accept -> this.accept()
+                    UBotEventResult.Type.Reject -> this.reject()
                 }
             }
         }
@@ -226,16 +226,16 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         }
     }
 
-    override suspend fun getGroupList(): Array<String> {
+    override suspend fun getGroupList(): List<String> {
         return bot.groups.map {
             it.id.toString()
-        }.toTypedArray()
+        }.toList()
     }
 
-    override suspend fun getMemberList(id: String): Array<String> {
+    override suspend fun getMemberList(id: String): List<String> {
         return bot.getGroupOrFail(id.toLong()).members.map {
             it.id.toString()
-        }.toTypedArray()
+        }.toList()
     }
 
     override suspend fun getPlatformID(): String {
