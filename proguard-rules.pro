@@ -16,6 +16,10 @@
     volatile <fields>;
 }
 
+# Netty
+-keepclassmembers class io.netty.channel.ChannelOutboundHandler { *; }
+-keepclassmembers class io.netty.channel.ChannelHandler { *; }
+
 # Bouncy Castle
 -keep class org.bouncycastle.jcajce.provider.** { *; }
 -keep class org.bouncycastle.jce.provider.** { *; }
