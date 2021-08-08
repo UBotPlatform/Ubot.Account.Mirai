@@ -19,10 +19,23 @@
 # Netty
 -keepclassmembers class io.netty.channel.ChannelOutboundHandler { *; }
 -keepclassmembers class io.netty.channel.ChannelHandler { *; }
+-dontwarn io.netty.handler.codec.**
+-dontwarn io.netty.handler.ssl.**
+-dontwarn io.netty.channel.rxtx.**
+-dontwarn io.netty.channel.udt.**
+-dontwarn io.netty.util.internal.logging.**
+-dontwarn io.netty.util.internal.svm.**
+-dontwarn io.netty.util.NetUtilSubstitutions
+-dontwarn io.netty.util.internal.Hidden$NettyBlockHoundIntegration
+-dontwarn io.netty.util.internal.Hidden$NettyBlockHoundIntegration$1
+
+# OkHttp3 Additional Rules
+-dontwarn okhttp3.internal.platform.**
 
 # Bouncy Castle
 -keep class org.bouncycastle.jcajce.provider.** { *; }
 -keep class org.bouncycastle.jce.provider.** { *; }
+-dontwarn org.bouncycastle.pqc.crypto.qtesla.QTeslaKeyEncodingTests
 
 # Jansi
 -keep class org.fusesource.jansi.internal.**{
