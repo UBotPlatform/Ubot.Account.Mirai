@@ -2,9 +2,11 @@ package ubot.account.mirai
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.groups.groupChoice
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.long
 import io.ktor.client.*
@@ -292,6 +294,17 @@ class MiraiCommand : CliktCommand() {
         "--heartbeat"
     ).enum<BotConfiguration.HeartbeatStrategy>(ignoreCase = true)
         .default(BotConfiguration.HeartbeatStrategy.STAT_HB)
+    private val level: Level by option(
+        "--level"
+    ).choice(
+        "OFF" to Level.OFF,
+        "ERROR" to Level.ERROR,
+        "WARN" to Level.WARN,
+        "INFO" to Level.INFO,
+        "DEBUG" to Level.DEBUG,
+        "TRACE" to Level.TRACE,
+        "ALL" to Level.ALL
+    ).default(Level.ALL)
     private val workingDir: File by lazy {
         var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
         if (appFolder.isFile) {
@@ -313,7 +326,7 @@ class MiraiCommand : CliktCommand() {
                     addAttribute("pattern", "%d %level{length=1}/%logger: %notEmpty{[%marker]} %msg%n%throwable")
                 })
                 .let(::add)
-            newRootLogger(Level.ALL)
+            newRootLogger(level)
                 .add(newAppenderRef("stdout"))
                 .let(::add)
         }.let {
