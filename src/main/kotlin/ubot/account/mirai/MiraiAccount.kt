@@ -303,7 +303,8 @@ class MiraiCommand : CliktCommand() {
         "INFO" to Level.INFO,
         "DEBUG" to Level.DEBUG,
         "TRACE" to Level.TRACE,
-        "ALL" to Level.ALL
+        "ALL" to Level.ALL,
+        ignoreCase = true
     ).default(Level.ALL)
     private val workingDir: File by lazy {
         var appFolder = File(MiraiAccount::class.java.protectionDomain.codeSource.location.toURI())
