@@ -10,10 +10,9 @@
 }
 -keepnames class net.mamoe.mirai.Mirai
 -keepnames class net.mamoe.mirai.MiraiImpl
+-keepnames class net.mamoe.mirai.message.data.OfflineAudio.Factory
+-keepnames class net.mamoe.mirai.internal.message.OfflineAudioFactoryImpl
 -keepclassmembers class net.mamoe.mirai.** {
-    volatile <fields>;
-}
--keepclassmembernames class net.mamoe.mirai.** {
     volatile <fields>;
 }
 
