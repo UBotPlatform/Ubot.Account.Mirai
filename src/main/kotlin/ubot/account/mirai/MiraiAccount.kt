@@ -24,7 +24,11 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import org.fusesource.jansi.AnsiConsole
+import net.mamoe.mirai.utils.LoggerAdapters.asMiraiLogger
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
@@ -303,8 +307,20 @@ class MiraiCommand : CliktCommand() {
 
     @OptIn(MiraiInternalApi::class)
     override fun run() {
+        ConfigurationBuilderFactory.newConfigurationBuilder().apply {
+            newAppender("stdout", "Console")
+                .add(newLayout("PatternLayout").apply {
+                    addAttribute("pattern", "%d %level{length=1}/%logger: %notEmpty{[%marker]} %msg%n%throwable")
+                })
+                .let(::add)
+            newRootLogger(Level.ALL)
+                .add(newAppenderRef("stdout"))
+                .let(::add)
+        }.let {
+            Configurator.initialize(it.build())
+        }
         MiraiLogger.setDefaultLoggerCreator { identity ->
-            PlatformLogger(identity, AnsiConsole.out()::println, true)
+            LogManager.getLogger(identity).asMiraiLogger()
         }
         runBlocking {
             val bot = newBot(qqId, qqPassword) {

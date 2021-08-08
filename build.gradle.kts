@@ -27,12 +27,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.0")
-    implementation("org.fusesource.jansi:jansi:2.3.3")
-    implementation("com.github.project-mirai:mirai-slf4j-bridge:a84f76ac31")
-    {
-        exclude("io.github.karlatemp","unsafe-accessor")
-    }
     implementation("com.github.ajalt.clikt:clikt:3.2.0")
+
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.14.1"))
+    implementation("org.apache.logging.log4j:log4j-api")
+    implementation("org.apache.logging.log4j:log4j-core")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl")
 
     val miraiVersion = "2.7-RC-dev-3"
     api("net.mamoe:mirai-core-api:$miraiVersion")

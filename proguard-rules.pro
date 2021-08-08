@@ -37,11 +37,6 @@
 -keep class org.bouncycastle.jce.provider.** { *; }
 -dontwarn org.bouncycastle.pqc.crypto.qtesla.QTeslaKeyEncodingTests
 
-# Jansi
--keep class org.fusesource.jansi.internal.**{
-    *;
-}
-
 # Kotlinx Serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
@@ -58,6 +53,10 @@
 
 # slf4j
 -keep class org.slf4j.impl.** { *; }
+
+# log4j2
+-dontwarn org.apache.logging.log4j.**
+-keep class org.apache.logging.log4j.** { *; }
 
 # Entry
 -keepclasseswithmembers public class ubot.account.mirai.MiraiAccountKt {
