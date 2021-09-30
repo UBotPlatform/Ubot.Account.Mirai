@@ -2,7 +2,6 @@ package ubot.account.mirai
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.groups.groupChoice
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -22,13 +21,12 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import net.mamoe.mirai.utils.LoggerAdapters.asMiraiLogger
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import ubot.common.*
@@ -133,6 +131,9 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         bot.getFriend(idLong)?.apply {
             return nick
         }
+        bot.getStranger(idLong)?.apply {
+            return nick
+        }
         bot.groups.forEach {
             it[idLong]?.apply {
                 return nick
@@ -174,15 +175,17 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 }
                 "face" -> entity.args.firstOrNull()?.toInt()?.let(::Face)
                 "image" -> entity.fetchExternalResource {
-                    it.uploadAsImage(contact)
+                    contact.uploadImage(it)
                 }
                 "voice" -> entity.fetchExternalResource {
-                    it.uploadAsVoice(contact)
+                    contact.uploadAudio(it)
                 }
                 "qq_app" -> entity.args.firstOrNull()?.let(::LightApp)
                 "qq_service" -> entity.args.firstOrNull()?.let {
                     @OptIn(MiraiExperimentalApi::class)
-                    SimpleServiceMessage(entity.namedArgs["service_id"]?.toIntOrNull() ?: 0, it)
+                    @Suppress("USELESS_CAST")
+                    // cast as SingleMessage to avoid marking MiraiExperimentalApi for the whole function
+                    SimpleServiceMessage(entity.namedArgs["service_id"]?.toIntOrNull() ?: 0, it) as SingleMessage
                 }
                 else -> PlainText("不支持的消息")
             }?.also { msg: SingleMessage ->
@@ -257,7 +260,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
                 is AtAll -> builder.add("at", "all")
                 is Face -> builder.add("face", it.id.toString())
                 is Image -> builder.add("image", it.queryUrl())
-                is Voice -> builder.add("voice", it.url ?: "")
+                is OnlineAudio -> builder.add("voice", it.urlForDownload)
                 is LightApp -> builder.add("qq_app", it.content)
                 is ServiceMessage -> builder.add(
                     ChatMessageEntity(
@@ -324,7 +327,7 @@ class MiraiCommand : CliktCommand() {
         ConfigurationBuilderFactory.newConfigurationBuilder().apply {
             newAppender("stdout", "Console")
                 .add(newLayout("PatternLayout").apply {
-                    addAttribute("pattern", "%d %level{length=1}/%logger: %notEmpty{[%marker]} %msg%n%throwable")
+                    addAttribute("pattern", "%d %level{length=1}/%logger: %notEmpty{[%markerSimpleName]} %msg%n%throwable")
                 })
                 .let(::add)
             newRootLogger(level)
@@ -332,9 +335,6 @@ class MiraiCommand : CliktCommand() {
                 .let(::add)
         }.let {
             Configurator.initialize(it.build())
-        }
-        MiraiLogger.setDefaultLoggerCreator { identity ->
-            LogManager.getLogger(identity).asMiraiLogger()
         }
         runBlocking {
             val bot = newBot(qqId, qqPassword) {

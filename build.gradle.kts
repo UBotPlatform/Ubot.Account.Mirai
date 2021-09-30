@@ -7,12 +7,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.1.0")
+        classpath("com.guardsquare:proguard-gradle:7.1.1")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.31"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     application
 }
@@ -25,7 +25,7 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.0")
     implementation("com.github.ajalt.clikt:clikt:3.2.0")
 
@@ -34,9 +34,12 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl")
 
-    val miraiVersion = "2.7-RC-dev-3"
+    implementation(platform("io.ktor:ktor-bom:1.6.3"))
+
+    val miraiVersion = "2.8.0-M1"
     api("net.mamoe:mirai-core-api:$miraiVersion")
     runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
+    implementation("net.mamoe:mirai-logging-log4j2:$miraiVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
@@ -49,7 +52,7 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 kotlin.sourceSets.all {
-    languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+    languageSettings.optIn("kotlin.RequiresOptIn")
 }
 
 application {

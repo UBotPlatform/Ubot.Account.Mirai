@@ -9,9 +9,11 @@
     public static ** valueOf(java.lang.String);
 }
 -keepnames class net.mamoe.mirai.Mirai
--keepnames class net.mamoe.mirai.MiraiImpl
+-keep class net.mamoe.mirai.MiraiImpl
 -keepnames class net.mamoe.mirai.message.data.OfflineAudio.Factory
--keepnames class net.mamoe.mirai.internal.message.OfflineAudioFactoryImpl
+-keep class net.mamoe.mirai.internal.message.OfflineAudioFactoryImpl
+-keepnames class net.mamoe.mirai.utils.MiraiLogger$Factory
+-keep class net.mamoe.mirai.utils.logging.MiraiLog4JFactory
 -keepclassmembers class net.mamoe.mirai.** {
     volatile <fields>;
 }
