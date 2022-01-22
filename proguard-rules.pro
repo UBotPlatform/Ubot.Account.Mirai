@@ -14,6 +14,8 @@
 -keep class net.mamoe.mirai.internal.message.OfflineAudioFactoryImpl
 -keepnames class net.mamoe.mirai.utils.MiraiLogger$Factory
 -keep class net.mamoe.mirai.utils.logging.MiraiLog4JFactory
+-keepnames class net.mamoe.mirai.message.data.InternalImageProtocol
+-keep class net.mamoe.mirai.internal.message.InternalImageProtocolImpl
 -keepclassmembers class net.mamoe.mirai.** {
     volatile <fields>;
 }
