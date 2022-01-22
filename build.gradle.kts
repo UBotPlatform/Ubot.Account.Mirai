@@ -12,8 +12,8 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.5.31"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version "1.6.10"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     application
 }
 
@@ -25,21 +25,21 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.0")
-    implementation("com.github.ajalt.clikt:clikt:3.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.1")
+    implementation("com.github.ajalt.clikt:clikt:3.4.0")
 
-    implementation(platform("org.apache.logging.log4j:log4j-bom:2.14.1"))
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.17.1"))
     implementation("org.apache.logging.log4j:log4j-api")
     implementation("org.apache.logging.log4j:log4j-core")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl")
 
-    implementation(platform("io.ktor:ktor-bom:1.6.3"))
+    implementation(platform("io.ktor:ktor-bom:1.6.7"))
 
-    val miraiVersion = "2.8.0-M1"
-    api("net.mamoe:mirai-core-api:$miraiVersion")
-    runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
-    implementation("net.mamoe:mirai-logging-log4j2:$miraiVersion")
+    implementation(platform("net.mamoe:mirai-bom:2.10.0-RC"))
+    implementation("net.mamoe:mirai-core-api")
+    runtimeOnly("net.mamoe:mirai-core")
+    implementation("net.mamoe:mirai-logging-log4j2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
