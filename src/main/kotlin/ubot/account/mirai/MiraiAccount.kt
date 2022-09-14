@@ -9,8 +9,8 @@ import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.long
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
@@ -25,7 +25,6 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
@@ -214,8 +213,8 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
             return Base64.getDecoder().decode(base64).toExternalResource().use(block)
         }
         args.firstOrNull()?.let { url ->
-            return client.get<InputStream>(url).use {
-                runInterruptible(Dispatchers.IO) {
+            return client.get(url).body<InputStream>().use {
+                runInterruptible(kotlinx.coroutines.Dispatchers.IO) {
                     it.toExternalResource()
                 }
             }.use(block)
@@ -317,12 +316,11 @@ class MiraiCommand : CliktCommand() {
         val workingDir = File(appFolder, "Mirai${qqId}")
         workingDir.mkdir()
         check(workingDir.isDirectory) {
-            "Failed to create instance folder for ${qqId}"
+            "Failed to create instance folder for $qqId"
         }
         workingDir
     }
 
-    @OptIn(MiraiInternalApi::class)
     override fun run() {
         ConfigurationBuilderFactory.newConfigurationBuilder().apply {
             newAppender("stdout", "Console")

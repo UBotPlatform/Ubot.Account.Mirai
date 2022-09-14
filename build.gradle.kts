@@ -9,12 +9,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.1.1")
+        classpath("com.guardsquare:proguard-gradle:7.3.0-beta1")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     application
 }
@@ -27,18 +27,20 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.8.1")
-    implementation("com.github.ajalt.clikt:clikt:3.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.9.0")
+    implementation("com.github.ajalt.clikt:clikt:3.5.0")
 
-    implementation(platform("org.apache.logging.log4j:log4j-bom:2.17.1"))
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.18.0"))
     implementation("org.apache.logging.log4j:log4j-api")
     implementation("org.apache.logging.log4j:log4j-core")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl")
 
-    implementation(platform("io.ktor:ktor-bom:1.6.7"))
+    implementation(platform("io.ktor:ktor-bom:2.1.1"))
+    implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-okhttp")
 
-    implementation(platform("net.mamoe:mirai-bom:2.10.0-RC"))
+    implementation(platform("net.mamoe:mirai-bom:2.13.0-M1"))
     implementation("net.mamoe:mirai-core-api")
     runtimeOnly("net.mamoe:mirai-core")
     implementation("net.mamoe:mirai-logging-log4j2")
