@@ -70,9 +70,7 @@ tasks.register<ProGuardTask>("shrinkShadowJar") {
     zipTree(shadowJar.archiveFile).matching {
         include("META-INF/proguard/*.pro")
         include("WEB-INF/proguard/*.pro")
-    }.forEach {
-        configuration(it)
-    }
+    }.let(::configuration)
     configuration("proguard-rules.pro")
     injars(shadowJar)
     outjars("$buildDir/libs/${project.name}-all-shrunk.jar")
