@@ -1,6 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import proguard.gradle.ProGuardTask
+import java.io.BufferedReader
+import java.io.FileReader
 
 buildscript {
     repositories {
@@ -67,6 +69,30 @@ tasks.withType<Jar> {
 
 val shadowJar = tasks.getByName<ShadowJar>("shadowJar")
 tasks.register<ProGuardTask>("shrinkShadowJar") {
+    dependsOn(shadowJar)
+    doFirst {
+        zipTree(shadowJar.archiveFile).matching {
+            include("META-INF/services/*")
+        }.forEach { file ->
+            keepnames("class ${file.name}")
+            val provider = BufferedReader(FileReader(file)).use {
+                it.lines().map { provider ->
+                    val length = provider.indexOf('#')
+                    if (length == -1) {
+                        provider
+                    } else {
+                        provider.substring(0, length)
+                    }
+                }.map { provider ->
+                    provider.trim()
+                }.filter { provider ->
+                    provider.isNotEmpty()
+                }.forEach { provider ->
+                    keep("class $provider")
+                }
+            }
+        }
+    }
     zipTree(shadowJar.archiveFile).matching {
         include("META-INF/proguard/*.pro")
         include("WEB-INF/proguard/*.pro")
