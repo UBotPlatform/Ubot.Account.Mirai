@@ -31,7 +31,7 @@ dependencies {
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.9.0")
     implementation("com.github.ajalt.clikt:clikt:3.5.0")
 
-    implementation(platform("org.apache.logging.log4j:log4j-bom:2.18.0"))
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.19.0"))
     implementation("org.apache.logging.log4j:log4j-api")
     implementation("org.apache.logging.log4j:log4j-core")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl")
@@ -40,7 +40,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-okhttp")
 
-    implementation(platform("net.mamoe:mirai-bom:2.13.0-M1"))
+    implementation(platform("net.mamoe:mirai-bom:2.13.2"))
     implementation("net.mamoe:mirai-core-api")
     runtimeOnly("net.mamoe:mirai-core")
     implementation("net.mamoe:mirai-logging-log4j2")
