@@ -3,13 +3,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import proguard.gradle.ProGuardTask
 import java.io.BufferedReader
 import java.io.FileReader
+import java.net.URI
 
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.3.0-beta1")
+        classpath("com.guardsquare:proguard-gradle:7.3.1")
     }
 }
 
@@ -22,6 +23,19 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
+    var githubReleases = ivy {
+        url = URI("https://github.com/")
+        patternLayout {
+            artifact("/[organisation]/[module]/releases/download/[revision]/[classifier]")
+        }
+        metadataSources { artifact() }
+    }
+    exclusiveContent {
+        forRepositories(githubReleases)
+        filter {
+            includeGroup("KasukuSakura")
+        }
+    }
 }
 
 dependencies {
@@ -30,6 +44,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.github.UBotPlatform.KtUBotCommon:KtUBotCommon:0.9.0")
     implementation("com.github.ajalt.clikt:clikt:3.5.0")
+
+    implementation("KasukuSakura:mirai-login-solver-sakura:v0.0.8:mirai-login-solver-sakura-0.0.8.mirai2.jar")
+    implementation("io.netty:netty-transport:4.1.85.Final")
+    implementation("io.netty:netty-codec-http:4.1.85.Final")
+    implementation("io.netty:netty-codec-socks:4.1.85.Final")
+    runtimeOnly("com.miglayout:miglayout-swing:11.0")
+    runtimeOnly("com.google.zxing:javase:3.5.0")
+    runtimeOnly("com.google.code.gson:gson:2.10")
 
     implementation(platform("org.apache.logging.log4j:log4j-bom:2.19.0"))
     implementation("org.apache.logging.log4j:log4j-api")
@@ -40,7 +62,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-okhttp")
 
-    implementation(platform("net.mamoe:mirai-bom:2.13.2"))
+    implementation(platform("net.mamoe:mirai-bom:2.14.0-RC"))
     implementation("net.mamoe:mirai-core-api")
     runtimeOnly("net.mamoe:mirai-core")
     implementation("net.mamoe:mirai-logging-log4j2")
@@ -51,7 +73,7 @@ dependencies {
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 

@@ -8,9 +8,14 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.long
+import com.kasukusakura.mlss.resolver.SakuraLoginSolver
+import com.kasukusakura.mlss.slovbroadcast.SakuraTransmitDaemon
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
@@ -25,16 +30,21 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiLogger
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import ubot.common.*
 import java.io.File
 import java.io.InputStream
+import java.security.SecureRandom
 import java.util.*
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.random.asKotlinRandom
 
 class MiraiAccount(private val event: UBotAccountEventEmitter,
                    private val bot: Bot)
@@ -44,6 +54,7 @@ class MiraiAccount(private val event: UBotAccountEventEmitter,
         bot.coroutineContext[Job]?.invokeOnCompletion {
             client.close()
         }
+
         bot.eventChannel.run {
             subscribeAlways<MemberJoinEvent> {
                 event.onMemberJoined(this.group.id.toString(), this.member.id.toString(), "")
@@ -321,11 +332,25 @@ class MiraiCommand : CliktCommand() {
         workingDir
     }
 
+    private fun sakuraDaemonNettyNioEventLoopGroup(): NioEventLoopGroup {
+        val threadGroup = ThreadGroup("SakuraLoginSolverDaemon")
+        val counter = AtomicInteger(0)
+        val threadFactory = ThreadFactory { task ->
+            Thread(threadGroup, task, "SakuraLoginSolverDaemon #${counter.getAndIncrement()}").also { thread ->
+                thread.isDaemon = true
+            }
+        }
+        return NioEventLoopGroup(0, threadFactory)
+    }
+
     override fun run() {
         ConfigurationBuilderFactory.newConfigurationBuilder().apply {
             newAppender("stdout", "Console")
                 .add(newLayout("PatternLayout").apply {
-                    addAttribute("pattern", "%d %level{length=1}/%logger: %notEmpty{[%markerSimpleName]} %msg%n%throwable")
+                    addAttribute(
+                        "pattern",
+                        "%d %level{length=1}/%logger: %notEmpty{[%markerSimpleName]} %msg%n%throwable"
+                    )
                 })
                 .let(::add)
             newRootLogger(level)
@@ -335,6 +360,15 @@ class MiraiCommand : CliktCommand() {
             Configurator.initialize(it.build())
         }
         runBlocking {
+            val server = SakuraTransmitDaemon(
+                sakuraDaemonNettyNioEventLoopGroup(),
+                NioServerSocketChannel::class.java,
+                NioSocketChannel::class.java,
+                SecureRandom().asKotlinRandom(),
+                MiraiLogger.Factory.INSTANCE.create(SakuraLoginSolver::class),
+            )
+            server.bootServer()
+            val solver = SakuraLoginSolver(server)
             val bot = newBot(qqId, qqPassword) {
                 parentCoroutineContext = coroutineContext
                 workingDir = this@MiraiCommand.workingDir
@@ -346,6 +380,11 @@ class MiraiCommand : CliktCommand() {
                 } else {
                     disableContactCache()
                 }
+                loginSolver = solver
+            }
+            bot.coroutineContext[Job]?.invokeOnCompletion {
+                server.shutdown()
+                server.eventLoopGroup.shutdownGracefully()
             }
             bot.login()
             UBotClientHost.hostAccount(ubotOp, ubotAddr, "QQ${bot.id}") { event ->
